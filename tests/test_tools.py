@@ -1,7 +1,7 @@
 """Tests for ck-obsidian-mcp tools using pytest-httpx to mock the Obsidian REST API."""
+
 from __future__ import annotations
 
-import json
 from unittest.mock import patch
 
 import pytest
@@ -28,6 +28,7 @@ def client(mock_settings) -> ObsidianClient:
 # ---------------------------------------------------------------------------
 # ObsidianClient tests
 # ---------------------------------------------------------------------------
+
 
 class TestObsidianClient:
     def test_create_note(self, client, httpx_mock: HTTPXMock):
@@ -74,6 +75,7 @@ class TestObsidianClient:
 # Session tool tests
 # ---------------------------------------------------------------------------
 
+
 class TestSessionTools:
     def test_start_session(self, mock_settings, httpx_mock: HTTPXMock):
         # PUT to create the session note
@@ -81,9 +83,12 @@ class TestSessionTools:
         # GET to fetch the last handoff (returns 404 = no prior handoff)
         httpx_mock.add_response(method="GET", status_code=404)
 
-        with patch("ck_obsidian_mcp.tools.session.settings", mock_settings), \
-             patch("ck_obsidian_mcp.tools.session._client", ObsidianClient(mock_settings)):
+        with (
+            patch("ck_obsidian_mcp.tools.session.settings", mock_settings),
+            patch("ck_obsidian_mcp.tools.session._client", ObsidianClient(mock_settings)),
+        ):
             from ck_obsidian_mcp.tools.session import start_session
+
             result = start_session(agent="claude", project="my-project", topic="Testing MCP")
 
         assert "session_id" in result
@@ -100,9 +105,12 @@ class TestSessionTools:
                 ]
             },
         )
-        with patch("ck_obsidian_mcp.tools.session.settings", mock_settings), \
-             patch("ck_obsidian_mcp.tools.session._client", ObsidianClient(mock_settings)):
+        with (
+            patch("ck_obsidian_mcp.tools.session.settings", mock_settings),
+            patch("ck_obsidian_mcp.tools.session._client", ObsidianClient(mock_settings)),
+        ):
             from ck_obsidian_mcp.tools.session import list_sessions
+
             result = list_sessions(agent="claude")
 
         assert result["count"] == 1
@@ -113,6 +121,7 @@ class TestSessionTools:
 # Insight tool tests
 # ---------------------------------------------------------------------------
 
+
 class TestInsightTools:
     def test_capture_insight_creates_index(self, mock_settings, httpx_mock: HTTPXMock):
         # note_exists → 404, create index → 200, append → 200
@@ -120,9 +129,12 @@ class TestInsightTools:
         httpx_mock.add_response(method="PUT", status_code=200)
         httpx_mock.add_response(method="PATCH", status_code=200)
 
-        with patch("ck_obsidian_mcp.tools.insights.settings", mock_settings), \
-             patch("ck_obsidian_mcp.tools.insights._client", ObsidianClient(mock_settings)):
+        with (
+            patch("ck_obsidian_mcp.tools.insights.settings", mock_settings),
+            patch("ck_obsidian_mcp.tools.insights._client", ObsidianClient(mock_settings)),
+        ):
             from ck_obsidian_mcp.tools.insights import capture_insight
+
             result = capture_insight(
                 session_id="abc12345",
                 agent="claude",

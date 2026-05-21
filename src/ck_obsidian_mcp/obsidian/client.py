@@ -3,6 +3,7 @@
 Wraps the Local REST API plugin (https://github.com/coddingtonbear/obsidian-local-rest-api).
 All paths are vault-relative (e.g. "AI-Chats/Sessions/note.md").
 """
+
 from __future__ import annotations
 
 import httpx

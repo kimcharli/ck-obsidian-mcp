@@ -1,11 +1,11 @@
 """Session management tools: start_session, log_message, end_session, list_sessions."""
+
 from __future__ import annotations
 
 import re
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 from ck_obsidian_mcp.config import AgentName, settings
 from ck_obsidian_mcp.obsidian.client import ObsidianClient
@@ -38,9 +38,9 @@ def _frontmatter(meta: SessionMetadata) -> str:
 
 def start_session(
     agent: AgentName,
-    project: Optional[str] = None,
-    topic: Optional[str] = None,
-    workdir: Optional[str] = None,
+    project: str | None = None,
+    topic: str | None = None,
+    workdir: str | None = None,
 ) -> dict:
     """Create a new session note and return the session_id and note path.
 
@@ -49,7 +49,7 @@ def start_session(
     can immediately resume context from the previous session.
     """
     session_id = uuid.uuid4().hex[:8]
-    started_at = datetime.now(timezone.utc)
+    started_at = datetime.now(UTC)
     meta = SessionMetadata(
         session_id=session_id,
         agent=agent,
@@ -104,10 +104,10 @@ def log_message(session_id: str, agent: AgentName, role: str, content: str) -> d
 def end_session(
     session_id: str,
     agent: AgentName,
-    summary: Optional[str] = None,
-    handoff_notes: Optional[str] = None,
-    project: Optional[str] = None,
-    workdir: Optional[str] = None,
+    summary: str | None = None,
+    handoff_notes: str | None = None,
+    project: str | None = None,
+    workdir: str | None = None,
 ) -> dict:
     """Finalize a session note and optionally write a handoff for the next session.
 
@@ -122,7 +122,7 @@ def end_session(
     if not note_path:
         return {"error": f"Session {session_id} not found"}
 
-    ended_at = datetime.now(timezone.utc)
+    ended_at = datetime.now(UTC)
     block_lines = [f"\n## Session End — {ended_at.strftime('%Y-%m-%d %H:%M UTC')}\n"]
     if summary:
         block_lines.append(f"**Summary:** {summary}\n")
@@ -153,7 +153,7 @@ def end_session(
     return result
 
 
-def list_sessions(agent: Optional[AgentName] = None, limit: int = 20) -> dict:
+def list_sessions(agent: AgentName | None = None, limit: int = 20) -> dict:
     """List recent session notes, optionally filtered by agent."""
     try:
         files = _client.list_notes(settings.sessions_path)
@@ -181,7 +181,8 @@ def list_sessions(agent: Optional[AgentName] = None, limit: int = 20) -> dict:
 # Internal helpers
 # ------------------------------------------------------------------
 
-def _find_session_note(session_id: str, agent: AgentName) -> Optional[str]:
+
+def _find_session_note(session_id: str, agent: AgentName) -> str | None:
     """Return the vault path of a session note given its session_id."""
     try:
         files = _client.list_notes(settings.sessions_path)
@@ -197,7 +198,8 @@ def _find_session_note(session_id: str, agent: AgentName) -> Optional[str]:
 # Project continuity / handoff helpers
 # ------------------------------------------------------------------
 
-def _handoff_key(project: Optional[str], workdir: Optional[str]) -> Optional[str]:
+
+def _handoff_key(project: str | None, workdir: str | None) -> str | None:
     """Derive a filesystem-safe slug to key handoff notes by project/workdir."""
     raw = project or (Path(workdir).name if workdir else None)
     if not raw:
@@ -213,11 +215,11 @@ def _write_handoff(
     key: str,
     session_id: str,
     agent: AgentName,
-    project: Optional[str],
-    workdir: Optional[str],
+    project: str | None,
+    workdir: str | None,
     ended_at: datetime,
     content: str,
-    summary: Optional[str] = None,
+    summary: str | None = None,
 ) -> None:
     """Overwrite the handoff note so the latest state is always at the top."""
     ts = ended_at.strftime("%Y-%m-%d %H:%M UTC")
@@ -236,9 +238,9 @@ def _write_handoff(
 
     body = [
         f"# 🤝 Handoff — {key}",
-        f"",
+        "",
         f"> Last updated by **{agent}** on {ts} (session `{session_id}`)",
-        f"",
+        "",
     ]
     if project:
         body.append(f"**Project:** {project}  ")
@@ -246,13 +248,13 @@ def _write_handoff(
         body.append(f"**Workdir:** `{workdir}`  ")
     body.append("")
     if summary:
-        body += [f"## Summary", f"", summary, ""]
-    body += [f"## Handoff Notes", f"", content, ""]
+        body += ["## Summary", "", summary, ""]
+    body += ["## Handoff Notes", "", content, ""]
 
     _client.create_note(_handoff_path(key), "\n".join(lines) + "\n".join(body))
 
 
-def _read_handoff(key: str) -> Optional[str]:
+def _read_handoff(key: str) -> str | None:
     """Return the raw Markdown content of the handoff note, or None if absent."""
     try:
         return _client.get_note(_handoff_path(key))
@@ -261,8 +263,8 @@ def _read_handoff(key: str) -> Optional[str]:
 
 
 def get_last_handoff(
-    project: Optional[str] = None,
-    workdir: Optional[str] = None,
+    project: str | None = None,
+    workdir: str | None = None,
 ) -> dict:
     """Return the latest handoff note for a project or workdir.
 

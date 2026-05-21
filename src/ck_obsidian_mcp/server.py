@@ -1,8 +1,9 @@
 """MCP server entry point — uses FastMCP for mcp dev / inspector compatibility."""
+
 from __future__ import annotations
 
 import json
-from typing import Annotated, Optional
+from typing import Annotated
 
 from mcp.server.fastmcp import FastMCP
 
@@ -10,9 +11,17 @@ from ck_obsidian_mcp.config import InsightCategory
 from ck_obsidian_mcp.tools.insights import capture_insight as _capture_insight
 from ck_obsidian_mcp.tools.session import (
     end_session as _end_session,
+)
+from ck_obsidian_mcp.tools.session import (
     get_last_handoff as _get_last_handoff,
+)
+from ck_obsidian_mcp.tools.session import (
     list_sessions as _list_sessions,
+)
+from ck_obsidian_mcp.tools.session import (
     log_message as _log_message,
+)
+from ck_obsidian_mcp.tools.session import (
     start_session as _start_session,
 )
 
@@ -30,10 +39,10 @@ _SID_DESC = "session_id returned by start_session"
 @mcp.tool()
 def start_session(
     agent: Annotated[str, "AI agent type: claude, copilot, gemini, or unknown"],
-    project: Annotated[Optional[str], "Project name — used to look up and link handoff notes"] = None,
-    topic: Annotated[Optional[str], "Brief topic/title for this session"] = None,
+    project: Annotated[str | None, "Project name — used to look up and link handoff notes"] = None,
+    topic: Annotated[str | None, "Brief topic/title for this session"] = None,
     workdir: Annotated[
-        Optional[str],
+        str | None,
         "Absolute path of the working directory. "
         "Used for project continuity; last handoff is returned automatically.",
     ] = None,
@@ -69,14 +78,14 @@ def log_message(
 def end_session(
     session_id: Annotated[str, _SID_DESC],
     agent: Annotated[str, _AGENT_DESC],
-    summary: Annotated[Optional[str], "High-level summary of the session"] = None,
+    summary: Annotated[str | None, "High-level summary of the session"] = None,
     handoff_notes: Annotated[
-        Optional[str],
+        str | None,
         "Detailed context for the next session: current state, what was completed, "
         "what is in progress, next steps, relevant file paths, open questions.",
     ] = None,
-    project: Annotated[Optional[str], "Project name (match start_session value)"] = None,
-    workdir: Annotated[Optional[str], "Working directory path (match start_session value)"] = None,
+    project: Annotated[str | None, "Project name (match start_session value)"] = None,
+    workdir: Annotated[str | None, "Working directory path (match start_session value)"] = None,
 ) -> str:
     """Finalize the session note. Write handoff_notes to persist context for the next session."""
     return json.dumps(
@@ -95,7 +104,7 @@ def end_session(
 
 @mcp.tool()
 def list_sessions(
-    agent: Annotated[Optional[str], "Filter by agent type (optional)"] = None,
+    agent: Annotated[str | None, "Filter by agent type (optional)"] = None,
     limit: Annotated[int, "Maximum sessions to return"] = 20,
 ) -> str:
     """List recent AI chat session notes from Obsidian."""
@@ -104,8 +113,8 @@ def list_sessions(
 
 @mcp.tool()
 def get_last_handoff(
-    project: Annotated[Optional[str], "Project name"] = None,
-    workdir: Annotated[Optional[str], "Working directory path"] = None,
+    project: Annotated[str | None, "Project name"] = None,
+    workdir: Annotated[str | None, "Working directory path"] = None,
 ) -> str:
     """Retrieve the latest handoff note for a project or workdir.
 
@@ -131,7 +140,7 @@ def capture_insight(
     ],
     title: Annotated[str, "Short descriptive title for this insight"],
     content: Annotated[str, "Insight content (Markdown supported)"],
-    tags: Annotated[Optional[list[str]], "Optional tags"] = None,
+    tags: Annotated[list[str] | None, "Optional tags"] = None,
 ) -> str:
     """Extract and store an important insight into the appropriate Obsidian index note."""
     return json.dumps(

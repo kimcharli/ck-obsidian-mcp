@@ -56,7 +56,7 @@ The fastest way to exercise all tools manually against a live Obsidian vault:
 uv run mcp dev src/ck_obsidian_mcp/server.py
 ```
 
-Opens the MCP Inspector UI at **http://localhost:5173**.
+Opens the MCP Inspector UI at **[http://localhost:5173](http://localhost:5173)**.
 
 - Select a tool from the left panel
 - Fill in the JSON arguments
@@ -96,20 +96,25 @@ echo '{"jsonrpc":"2.0","method":"tools/call","id":2,"params":{"name":"start_sess
 ## Common Issues
 
 ### `401 Unauthorized` from Obsidian REST API
+
 - Confirm Obsidian is running and the Local REST API plugin is enabled
 - Check `OBSIDIAN_REST_API_KEY` in `.env` matches the key shown in:
   **Obsidian → Settings → Community Plugins → Local REST API**
 
 ### `404` when appending to a note
+
 `ObsidianClient.append_to_note` catches 404 and falls back to `create_note` automatically. If you see persistent 404s, the vault path may be wrong — check `VAULT_ROOT` in `.env`.
 
 ### `Session <id> not found` error
+
 `_find_session_note` scans `AI-Chats/Sessions/` for a file matching both `session_id` and `agent`. If the Sessions folder is empty or the listing fails (e.g. Obsidian not running), this error is returned.
 
 ### MCP Inspector shows "not a valid server object"
+
 The inspector requires a `FastMCP` instance. `server.py` exports `mcp` (a `FastMCP` object) — make sure you haven't reverted to the old low-level `Server` class.
 
 ### `uv run mcp dev` picks up wrong Python
+
 Run `uv python list` to verify 3.14 is available. If not: `uv python install 3.14`.
 
 ## Environment Variables
@@ -122,7 +127,7 @@ Run `uv python list` to verify 3.14 is available. If not: `uv python install 3.1
 
 ## Project Layout
 
-```
+```text
 src/ck_obsidian_mcp/
   server.py          FastMCP entry point; all tool registrations
   config.py          Settings (pydantic-settings) + InsightCategory enum + CATEGORY_FOLDER map

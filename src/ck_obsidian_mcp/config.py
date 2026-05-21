@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class InsightCategory(str, Enum):
+class InsightCategory(StrEnum):
     decision = "decision"
     code_snippet = "code_snippet"
     action_item = "action_item"

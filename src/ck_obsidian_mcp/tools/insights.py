@@ -1,8 +1,6 @@
 """Insight capture tool: writes extracted knowledge to category index notes."""
-from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from __future__ import annotations
 
 from ck_obsidian_mcp.config import AgentName, InsightCategory, settings
 from ck_obsidian_mcp.obsidian.client import ObsidianClient
@@ -47,7 +45,7 @@ def capture_insight(
     category: InsightCategory,
     title: str,
     content: str,
-    tags: Optional[list[str]] = None,
+    tags: list[str] | None = None,
 ) -> dict:
     """Extract and store an insight into the appropriate category index note.
 
@@ -69,17 +67,17 @@ def capture_insight(
 
     block_lines = [
         f"## {emoji} {insight.title}",
-        f"",
+        "",
         f"- **Agent:** {agent}  **Session:** `{session_id}`  **Captured:** {ts}",
     ]
     if tag_str:
         block_lines.append(f"- **Tags:** {tag_str}")
     block_lines += [
-        f"",
+        "",
         insight.content,
-        f"",
-        f"---",
-        f"",
+        "",
+        "---",
+        "",
     ]
 
     _client.append_to_note(_index_path(category), "\n".join(block_lines))

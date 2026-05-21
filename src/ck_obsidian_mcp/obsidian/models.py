@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
-from typing import Optional
+from datetime import datetime
 
 from pydantic import BaseModel, Field
 
@@ -12,9 +11,9 @@ class SessionMetadata(BaseModel):
     session_id: str
     agent: AgentName
     started_at: datetime
-    project: Optional[str] = None
-    topic: Optional[str] = None
-    workdir: Optional[str] = None
+    project: str | None = None
+    topic: str | None = None
+    workdir: str | None = None
 
 
 class Message(BaseModel):
