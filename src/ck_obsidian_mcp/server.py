@@ -1,7 +1,5 @@
 """MCP server entry point — uses FastMCP for mcp dev / inspector compatibility."""
 
-from __future__ import annotations
-
 import json
 from typing import Annotated
 
@@ -142,7 +140,12 @@ def capture_insight(
     content: Annotated[str, "Insight content (Markdown supported)"],
     tags: Annotated[list[str] | None, "Optional tags"] = None,
 ) -> str:
-    """Extract and store an important insight into the appropriate Obsidian index note."""
+    """Consolidate reusable knowledge into Obsidian category notes.
+
+    Use this for best practices, lessons learned, reusable decisions, action
+    items, handoff context, and other durable knowledge that future sessions
+    should be able to retrieve quickly.
+    """
     return json.dumps(
         _capture_insight(
             session_id=session_id,

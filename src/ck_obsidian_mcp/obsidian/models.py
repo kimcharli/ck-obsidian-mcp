@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from datetime import datetime
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
 
@@ -19,7 +17,7 @@ class SessionMetadata(BaseModel):
 class Message(BaseModel):
     role: str  # "user" | "assistant"
     content: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class Insight(BaseModel):
@@ -29,4 +27,4 @@ class Insight(BaseModel):
     session_id: str
     agent: AgentName
     tags: list[str] = Field(default_factory=list)
-    captured_at: datetime = Field(default_factory=datetime.utcnow)
+    captured_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

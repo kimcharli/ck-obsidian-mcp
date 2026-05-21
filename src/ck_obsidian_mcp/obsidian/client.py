@@ -4,8 +4,6 @@ Wraps the Local REST API plugin (https://github.com/coddingtonbear/obsidian-loca
 All paths are vault-relative (e.g. "AI-Chats/Sessions/note.md").
 """
 
-from __future__ import annotations
-
 from urllib.parse import quote
 
 import httpx
@@ -80,6 +78,18 @@ class ObsidianClient:
             if resp.status_code == 404:
                 # Note doesn't exist yet — create it
                 self.create_note(path, content)
+            elif resp.status_code in (400, 405):
+                # Some plugin versions reject PATCH; fall back to read+write append.
+                existing = ""
+                get_resp = client.get(
+                    url,
+                    headers={**self._headers, "Accept": "text/markdown"},
+                )
+                if get_resp.status_code == 200:
+                    existing = get_resp.text
+                elif get_resp.status_code != 404:
+                    get_resp.raise_for_status()
+                self.create_note(path, existing + content)
             else:
                 resp.raise_for_status()
 

@@ -76,7 +76,7 @@ The `.mcp.json` file in the project root is pre-configured. Update `OBSIDIAN_RES
 ## MCP Tools
 
 | Tool | Description |
-|------|-------------|
+| ------ | ------------- |
 | `start_session` | Start a new session note; returns `session_id` |
 | `log_message` | Append a user/assistant turn to the session note |
 | `end_session` | Close the session with an optional summary |
@@ -86,7 +86,7 @@ The `.mcp.json` file in the project root is pre-configured. Update `OBSIDIAN_RES
 ### Insight categories
 
 | Category | Folder | Use for |
-|----------|--------|---------|
+| ---------- | -------- | --------- |
 | `decision` | Decisions/ | Architecture and design decisions |
 | `code_snippet` | Code-Snippets/ | Reusable code samples |
 | `action_item` | Action-Items/ | Follow-up tasks |
@@ -122,6 +122,8 @@ end_session(session_id="a1b2c3d4", agent="claude", summary="Implemented JWT auth
 
 ## Development
 
+Canonical guide: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
+
 ```bash
 uv sync --extra dev
 
@@ -143,7 +145,7 @@ Software Design Document lives in [`specs/SDD.md`](specs/SDD.md).
 ## Configuration Reference
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+| ---------- | --------- | ------------- |
 | `OBSIDIAN_REST_API_URL` | `http://localhost:27123` | Local REST API base URL |
 | `OBSIDIAN_REST_API_KEY` | *(required)* | API key from the plugin |
 | `VAULT_ROOT` | `AI-Chats` | Root folder in the vault |

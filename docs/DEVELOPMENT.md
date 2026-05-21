@@ -174,7 +174,7 @@ Reload the window. The server will start automatically when a chat session opens
 ## Common Issues
 
 | Error | Cause | Fix |
-|-------|-------|-----|
+| ------- | ------- | ----- |
 | `server object is of type <class 'module'>` | `mcp` is a module import, not a `FastMCP` instance | Rename the local import; expose `mcp = FastMCP(...)` at module level |
 | `Low level Server class is not yet supported` | Using `mcp.server.lowlevel.server.Server` | Switch to `FastMCP` |
 | `No server object found` | `mcp dev` can't locate the FastMCP instance | Ensure the variable is named `mcp`, `server`, or `app` and is a module-level global |
@@ -187,7 +187,7 @@ Reload the window. The server will start automatically when a chat session opens
 ## Environment Variables
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+| ---------- | --------- | ------------- |
 | `OBSIDIAN_REST_API_URL` | `http://localhost:27123` | Obsidian Local REST API base URL — use `https://localhost:27124` if HTTPS is enabled in the plugin |
 | `OBSIDIAN_REST_API_KEY` | *(required)* | API key from the plugin settings |
 | `VAULT_ROOT` | `AI-Chats` | Root folder inside the vault for all MCP notes |
@@ -208,7 +208,7 @@ ck-obsidian-mcp/
       client.py       ← ObsidianClient (httpx)
       models.py       ← SessionMetadata, Message, Insight
   docs/
-    DEVELOPING.md     ← this file
+    DEVELOPMENT.md    ← this file
   specs/
     SDD.md            ← Software Design Document
   tests/

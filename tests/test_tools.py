@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
+import httpx
 import pytest
 from pytest_httpx import HTTPXMock
 
@@ -59,6 +60,26 @@ class TestObsidianClient:
             status_code=200,
         )
         client.append_to_note("AI-Chats/Sessions/new.md", "content")
+
+    def test_append_falls_back_when_patch_rejected(self, client, httpx_mock: HTTPXMock):
+        httpx_mock.add_response(
+            method="PATCH",
+            url="http://localhost:27123/vault/AI-Chats%2FSessions%2Fexisting.md",
+            status_code=400,
+        )
+        httpx_mock.add_response(
+            method="GET",
+            url="http://localhost:27123/vault/AI-Chats%2FSessions%2Fexisting.md",
+            status_code=200,
+            text="# Header\n",
+        )
+        httpx_mock.add_response(
+            method="PUT",
+            url="http://localhost:27123/vault/AI-Chats%2FSessions%2Fexisting.md",
+            status_code=200,
+        )
+
+        client.append_to_note("AI-Chats/Sessions/existing.md", "## Next\n")
 
     def test_list_notes(self, client, httpx_mock: HTTPXMock):
         httpx_mock.add_response(
@@ -124,10 +145,19 @@ class TestSessionTools:
 
 class TestInsightTools:
     def test_capture_insight_creates_index(self, mock_settings, httpx_mock: HTTPXMock):
-        # note_exists → 404, create index → 200, append → 200
-        httpx_mock.add_response(method="GET", status_code=404)
-        httpx_mock.add_response(method="PUT", status_code=200)
-        httpx_mock.add_response(method="PATCH", status_code=200)
+        seen_urls: list[str] = []
+
+        def record_url(request: httpx.Request, status_code: int = 200, json: dict | None = None):
+            seen_urls.append(str(request.url))
+            return httpx.Response(status_code=status_code, json=json)
+
+        httpx_mock.add_callback(
+            lambda request: record_url(request, status_code=404),
+            method="GET",
+        )
+        httpx_mock.add_callback(lambda request: record_url(request), method="PUT")
+        httpx_mock.add_callback(lambda request: record_url(request), method="PUT")
+        httpx_mock.add_callback(lambda request: record_url(request), method="PATCH")
 
         with (
             patch("ck_obsidian_mcp.tools.insights.settings", mock_settings),
@@ -146,3 +176,6 @@ class TestInsightTools:
 
         assert result["ok"] is True
         assert result["category"] == "decision"
+        assert result["page_path"].startswith("AI-Chats/Decisions/")
+        assert result["index_path"] == "AI-Chats/Decisions/index.md"
+        assert any("%2F" in url for url in seen_urls)

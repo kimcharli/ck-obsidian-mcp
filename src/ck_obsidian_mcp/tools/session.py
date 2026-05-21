@@ -1,7 +1,5 @@
 """Session management tools: start_session, log_message, end_session, list_sessions."""
 
-from __future__ import annotations
-
 import re
 import uuid
 from datetime import UTC, datetime
@@ -189,8 +187,9 @@ def _find_session_note(session_id: str, agent: AgentName) -> str | None:
     except Exception:
         return None
     for f in files:
-        if session_id in f and agent in f:
-            return f
+        candidate = f if "/" in f else f"{settings.sessions_path}/{f}"
+        if session_id in candidate and agent in candidate:
+            return candidate
     return None
 
 

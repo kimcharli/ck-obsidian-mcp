@@ -1,5 +1,7 @@
 # Software Design Document — ck-obsidian-mcp
 
+<!-- markdownlint-disable MD060 -->
+
 ## 1. Overview
 
 `ck-obsidian-mcp` is a Python MCP (Model Context Protocol) server that enables AI agents (Claude, Copilot, Gemini) to log their chat sessions and extracted knowledge to an Obsidian vault via the [Local REST API plugin](https://github.com/coddingtonbear/obsidian-local-rest-api).
@@ -119,6 +121,12 @@ Appends a `## Session End` block with timestamp and optional summary.
 | `content` | string | ✓ |
 | `tags` | list[str] | — |
 
+`capture_insight` is the MCP entry point for consolidating durable knowledge.
+Use it for reusable best practices, lessons learned, decisions, handoff
+context, and other information that should live beyond a single session.
+`log_message` remains the raw conversation transcript and should not be used
+for curated knowledge capture.
+
 **Categories and vault folders:**
 
 | Category | Vault Folder | Emoji | Purpose |
@@ -132,6 +140,15 @@ Appends a `## Session End` block with timestamp and optional summary.
 | `sdd_point` | SDD/ | 📐 | SDD critical points |
 | `handoff` | Handoff/ | 🤝 | Context for next session |
 | `ddd_skill` | DDD-Skills/ | 🏗️ | Domain-Driven Design patterns |
+
+Each captured insight is stored as a dedicated page inside the matching category folder, and the category's `index.md` acts as a collection page that links to the individual insight pages.
+
+**Page layout:**
+
+- Category index: `AI-Chats/<CategoryFolder>/index.md`
+- Insight page: `AI-Chats/<CategoryFolder>/<timestamp>-<session_id>-<slug>.md`
+
+The page contains the full note content and metadata, while the index keeps the short, scannable collection of links.
 
 ---
 
