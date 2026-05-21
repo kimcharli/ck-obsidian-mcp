@@ -34,7 +34,7 @@ class TestObsidianClient:
     def test_create_note(self, client, httpx_mock: HTTPXMock):
         httpx_mock.add_response(
             method="PUT",
-            url="http://localhost:27123/vault/AI-Chats/Sessions/test.md",
+            url="http://localhost:27123/vault/AI-Chats%2FSessions%2Ftest.md",
             status_code=200,
         )
         client.create_note("AI-Chats/Sessions/test.md", "# Hello")
@@ -42,7 +42,7 @@ class TestObsidianClient:
     def test_append_to_note(self, client, httpx_mock: HTTPXMock):
         httpx_mock.add_response(
             method="PATCH",
-            url="http://localhost:27123/vault/AI-Chats/Sessions/test.md",
+            url="http://localhost:27123/vault/AI-Chats%2FSessions%2Ftest.md",
             status_code=200,
         )
         client.append_to_note("AI-Chats/Sessions/test.md", "\n## New section\n")
@@ -50,12 +50,12 @@ class TestObsidianClient:
     def test_append_creates_when_not_found(self, client, httpx_mock: HTTPXMock):
         httpx_mock.add_response(
             method="PATCH",
-            url="http://localhost:27123/vault/AI-Chats/Sessions/new.md",
+            url="http://localhost:27123/vault/AI-Chats%2FSessions%2Fnew.md",
             status_code=404,
         )
         httpx_mock.add_response(
             method="PUT",
-            url="http://localhost:27123/vault/AI-Chats/Sessions/new.md",
+            url="http://localhost:27123/vault/AI-Chats%2FSessions%2Fnew.md",
             status_code=200,
         )
         client.append_to_note("AI-Chats/Sessions/new.md", "content")
@@ -63,7 +63,7 @@ class TestObsidianClient:
     def test_list_notes(self, client, httpx_mock: HTTPXMock):
         httpx_mock.add_response(
             method="GET",
-            url="http://localhost:27123/vault/AI-Chats/Sessions/",
+            url="http://localhost:27123/vault/AI-Chats%2FSessions/",
             json={"files": ["AI-Chats/Sessions/claude-2026-05-20-abc12345.md"]},
         )
         files = client.list_notes("AI-Chats/Sessions")

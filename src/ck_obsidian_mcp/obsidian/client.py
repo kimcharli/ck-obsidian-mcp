@@ -6,6 +6,8 @@ All paths are vault-relative (e.g. "AI-Chats/Sessions/note.md").
 
 from __future__ import annotations
 
+from urllib.parse import quote
+
 import httpx
 
 from ck_obsidian_mcp.config import Settings
@@ -31,7 +33,7 @@ class ObsidianClient:
     def _vault_url(self, path: str) -> str:
         """Build URL for a vault-file endpoint."""
         clean = path.lstrip("/")
-        return f"{self._base}/vault/{clean}"
+        return f"{self._base}/vault/{quote(clean, safe='')}"
 
     # ------------------------------------------------------------------
     # Note operations
@@ -83,7 +85,8 @@ class ObsidianClient:
 
     def list_notes(self, folder: str) -> list[str]:
         """Return a list of file paths under *folder* in the vault."""
-        url = f"{self._base}/vault/{folder.strip('/')}/"
+        clean = folder.strip("/")
+        url = f"{self._base}/vault/{quote(clean, safe='')}/"
         with self._client() as client:
             resp = client.get(url, headers={**self._headers, "Accept": "application/json"})
             resp.raise_for_status()
