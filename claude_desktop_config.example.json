@@ -1,0 +1,19 @@
+{
+  "_comment": "Copy the mcpServers block into ~/Library/Application Support/Claude/claude_desktop_config.json",
+  "_note": "Claude Desktop does not expand $HOME or shell variables — use a full absolute path in --directory",
+  "mcpServers": {
+    "ck-obsidian-mcp": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory", "/Users/yourname/Projects/ck-obsidian-mcp",
+        "ck-obsidian-mcp"
+      ],
+      "env": {
+        "OBSIDIAN_REST_API_URL": "http://localhost:27123",
+        "OBSIDIAN_REST_API_KEY": "your-api-key-here",
+        "VAULT_ROOT": "AI-Chats"
+      }
+    }
+  }
+}
