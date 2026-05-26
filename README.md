@@ -80,7 +80,7 @@ The `.mcp.json` file in the project root is pre-configured. Update `OBSIDIAN_RES
 | `start_session` | Start a new session note; returns `session_id` |
 | `log_message` | Append a user/assistant turn to the session note |
 | `end_session` | Close the session with an optional summary |
-| `capture_insight` | Save important data to a category index note |
+| `capture_insight` | Save important data to a category index note (supports compact summary/details mode) |
 | `list_sessions` | List recent sessions (optionally filtered by agent) |
 
 ### Insight categories
@@ -116,9 +116,32 @@ capture_insight(
   tags=["auth", "jwt"]
 )
 
+# Compact capture (recommended for token efficiency)
+capture_insight(
+  session_id="a1b2c3d4", agent="claude",
+  category="lesson_learned", title="Trim insight payloads",
+  summary="Store only durable takeaways in insights.",
+  details="Keep full conversational context in session logs when needed.",
+  tags=["tokens", "memory"]
+)
+
 # End session
 end_session(session_id="a1b2c3d4", agent="claude", summary="Implemented JWT auth flow.")
 ```
+
+### capture_insight inputs and metadata
+
+`capture_insight` accepts either full `content`, or the compact pair `summary` + optional `details`.
+
+- If `summary` is provided, it is prioritized as the top-level content.
+- If `details` is provided with `summary`, details are appended under a dedicated section.
+- If content exceeds limits, it is truncated with a marker.
+
+The tool returns additional metadata to help callers avoid duplicate captures and track truncation behavior:
+
+- `content_hash` (stable hash of category + title + raw content)
+- `was_truncated`, `original_chars`, `stored_chars`
+- `tags_were_truncated`, `original_tag_count`, `stored_tag_count`
 
 ## Development
 
@@ -149,3 +172,5 @@ Software Design Document lives in [`specs/SDD.md`](specs/SDD.md).
 | `OBSIDIAN_REST_API_URL` | `http://localhost:27123` | Local REST API base URL |
 | `OBSIDIAN_REST_API_KEY` | *(required)* | API key from the plugin |
 | `VAULT_ROOT` | `AI-Chats` | Root folder in the vault |
+| `MAX_INSIGHT_CONTENT_CHARS` | `1200` | Maximum stored insight content length |
+| `MAX_INSIGHT_TAGS` | `8` | Maximum stored insight tags |

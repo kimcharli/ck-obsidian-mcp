@@ -51,6 +51,16 @@ class Settings(BaseSettings):
         default="AI-Chats",
         description="Root folder inside the Obsidian vault for all AI chat logs",
     )
+    max_insight_content_chars: int = Field(
+        default=1200,
+        ge=1,
+        description="Maximum number of characters stored for insight content",
+    )
+    max_insight_tags: int = Field(
+        default=8,
+        ge=1,
+        description="Maximum number of tags stored per insight",
+    )
 
     @property
     def sessions_path(self) -> str:

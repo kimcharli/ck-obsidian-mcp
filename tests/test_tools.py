@@ -179,3 +179,74 @@ class TestInsightTools:
         assert result["page_path"].startswith("AI-Chats/Decisions/")
         assert result["index_path"] == "AI-Chats/Decisions/index.md"
         assert any("%2F" in url for url in seen_urls)
+
+    def test_capture_insight_applies_truncation_and_tag_limit(
+        self, mock_settings, httpx_mock: HTTPXMock
+    ):
+        limited_settings = mock_settings.model_copy(
+            update={"max_insight_content_chars": 20, "max_insight_tags": 2}
+        )
+
+        httpx_mock.add_response(method="GET", status_code=404)
+        httpx_mock.add_response(method="PUT", status_code=200)
+        httpx_mock.add_response(method="PUT", status_code=200)
+        httpx_mock.add_response(method="PATCH", status_code=200)
+
+        with (
+            patch("ck_obsidian_mcp.tools.insights.settings", limited_settings),
+            patch("ck_obsidian_mcp.tools.insights._client", ObsidianClient(limited_settings)),
+        ):
+            from ck_obsidian_mcp.tools.insights import capture_insight
+
+            result = capture_insight(
+                session_id="abc12345",
+                agent="claude",
+                category=InsightCategory.lesson_learned,
+                title="Long lesson",
+                content="This is a long insight content that should be truncated.",
+                tags=["one", "two", "two", "three"],
+            )
+
+        assert result["ok"] is True
+        assert result["was_truncated"] is True
+        assert result["original_chars"] > result["stored_chars"]
+        assert result["tags_were_truncated"] is True
+        assert result["stored_tag_count"] == 2
+        assert len(result["content_hash"]) == 64
+
+    def test_capture_insight_supports_summary_and_details(
+        self, mock_settings, httpx_mock: HTTPXMock
+    ):
+        captured_put_bodies: list[str] = []
+
+        httpx_mock.add_response(method="GET", status_code=404)
+
+        def record_put(request: httpx.Request) -> httpx.Response:
+            captured_put_bodies.append(request.content.decode())
+            return httpx.Response(status_code=200)
+
+        httpx_mock.add_callback(record_put, method="PUT")
+        httpx_mock.add_callback(record_put, method="PUT")
+        httpx_mock.add_response(method="PATCH", status_code=200)
+
+        with (
+            patch("ck_obsidian_mcp.tools.insights.settings", mock_settings),
+            patch("ck_obsidian_mcp.tools.insights._client", ObsidianClient(mock_settings)),
+        ):
+            from ck_obsidian_mcp.tools.insights import capture_insight
+
+            result = capture_insight(
+                session_id="abc12345",
+                agent="claude",
+                category=InsightCategory.summary,
+                title="Compact capture",
+                summary="Use compact summary first.",
+                details="Optional details are appended only when provided.",
+            )
+
+        assert result["ok"] is True
+        assert result["was_truncated"] is False
+        assert result["original_chars"] == result["stored_chars"]
+        assert len(captured_put_bodies) == 2
+        assert "Use compact summary first." in captured_put_bodies[-1]
+        assert "## Details" in captured_put_bodies[-1]

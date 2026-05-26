@@ -29,6 +29,10 @@ _AGENT_DESC = "AI agent type: claude, copilot, gemini, or unknown"
 _SID_DESC = "session_id returned by start_session"
 
 
+def _to_json(payload: object) -> str:
+    return json.dumps(payload, default=str, separators=(",", ":"))
+
+
 # ---------------------------------------------------------------------------
 # Session tools
 # ---------------------------------------------------------------------------
@@ -50,11 +54,7 @@ def start_session(
     If project or workdir is provided, the last handoff note is returned as
     'last_handoff' so the agent can immediately resume context.
     """
-    return json.dumps(
-        _start_session(agent=agent, project=project, topic=topic, workdir=workdir),
-        default=str,
-        indent=2,
-    )
+    return _to_json(_start_session(agent=agent, project=project, topic=topic, workdir=workdir))
 
 
 @mcp.tool()
@@ -65,11 +65,7 @@ def log_message(
     content: Annotated[str, "Message content (Markdown supported)"],
 ) -> str:
     """Append a conversation turn (user or assistant) to the session note."""
-    return json.dumps(
-        _log_message(session_id=session_id, agent=agent, role=role, content=content),
-        default=str,
-        indent=2,
-    )
+    return _to_json(_log_message(session_id=session_id, agent=agent, role=role, content=content))
 
 
 @mcp.tool()
@@ -86,7 +82,7 @@ def end_session(
     workdir: Annotated[str | None, "Working directory path (match start_session value)"] = None,
 ) -> str:
     """Finalize the session note. Write handoff_notes to persist context for the next session."""
-    return json.dumps(
+    return _to_json(
         _end_session(
             session_id=session_id,
             agent=agent,
@@ -94,9 +90,7 @@ def end_session(
             handoff_notes=handoff_notes,
             project=project,
             workdir=workdir,
-        ),
-        default=str,
-        indent=2,
+        )
     )
 
 
@@ -106,7 +100,7 @@ def list_sessions(
     limit: Annotated[int, "Maximum sessions to return"] = 20,
 ) -> str:
     """List recent AI chat session notes from Obsidian."""
-    return json.dumps(_list_sessions(agent=agent, limit=limit), default=str, indent=2)
+    return _to_json(_list_sessions(agent=agent, limit=limit))
 
 
 @mcp.tool()
@@ -119,7 +113,7 @@ def get_last_handoff(
     Use at the start of a coding session to resume where the last session left off.
     Also returned automatically by start_session when project/workdir is provided.
     """
-    return json.dumps(_get_last_handoff(project=project, workdir=workdir), default=str, indent=2)
+    return _to_json(_get_last_handoff(project=project, workdir=workdir))
 
 
 # ---------------------------------------------------------------------------
@@ -137,7 +131,11 @@ def capture_insight(
         "lesson_learned, skill, sdd_point, handoff, ddd_skill",
     ],
     title: Annotated[str, "Short descriptive title for this insight"],
-    content: Annotated[str, "Insight content (Markdown supported)"],
+    content: Annotated[str | None, "Insight content (Markdown supported)"] = None,
+    summary: Annotated[str | None, "Short durable takeaway for compact capture"] = None,
+    details: Annotated[
+        str | None, "Optional extra context appended under a Details section"
+    ] = None,
     tags: Annotated[list[str] | None, "Optional tags"] = None,
 ) -> str:
     """Consolidate reusable knowledge into Obsidian category notes.
@@ -146,17 +144,17 @@ def capture_insight(
     items, handoff context, and other durable knowledge that future sessions
     should be able to retrieve quickly.
     """
-    return json.dumps(
+    return _to_json(
         _capture_insight(
             session_id=session_id,
             agent=agent,
             category=InsightCategory(category),
             title=title,
             content=content,
+            summary=summary,
+            details=details,
             tags=tags,
-        ),
-        default=str,
-        indent=2,
+        )
     )
 
 
